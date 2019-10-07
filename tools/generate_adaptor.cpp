@@ -38,7 +38,7 @@ extern const char *dbus_includes;
 
 /*! Generate adaptor code for a XML introspection
   */
-void generate_adaptor(Xml::Document &doc, const char *filename)
+void generate_adaptor(Xml::Document &doc, const char *filename, bool property_accessors)
 {
   ostringstream body;
   ostringstream head;
@@ -119,17 +119,29 @@ void generate_adaptor(Xml::Document &doc, const char *filename)
     {
       Xml::Node &property = **pi;
 
-      body << tab << tab << "bind_property("
-           << property.get("name") << ", "
-           << "\"" << property.get("type") << "\", "
-           << (property.get("access").find("read") != string::npos
-               ? "true"
-               : "false")
-           << ", "
-           << (property.get("access").find("write") != string::npos
-               ? "true"
-               : "false")
-           << ");" << endl;
+      if (property_accessors) {
+        string type = property.get("type");
+        string type_name = signature_to_type(type);
+        body << tab << tab << "bind_property_accessor_"
+             << (property.get("access").find("read") != string::npos ? "r" : "")
+             << (property.get("access").find("write") != string::npos ? "w"
+                                                                      : "")
+             << "(" << property.get("name") << ", "
+             << "\"" << property.get("type") << "\", " << type_name << ");"
+             << endl;
+      } else {
+        body << tab << tab << "bind_property("
+             << property.get("name") << ", "
+             << "\"" << property.get("type") << "\", "
+             << (property.get("access").find("read") != string::npos
+                 ? "true"
+                 : "false")
+             << ", "
+             << (property.get("access").find("write") != string::npos
+                 ? "true"
+                 : "false")
+             << ");" << endl;
+      }
     }
 
     // generate code to register all methods
@@ -256,7 +268,16 @@ void generate_adaptor(Xml::Document &doc, const char *filename)
       string type = property.get("type");
       string type_name = signature_to_type(type);
 
-      body << tab << "::DBus::PropertyAdaptor< " << type_name << " > " << name << ";" << endl;
+      if (property_accessors) {
+        if (property.get("access").find("read") != string::npos) {
+          body << tab << "virtual " << type_name << " " << name << "() = 0;" << endl;
+        }
+        if (property.get("access").find("write") != string::npos) {
+          body << tab << "virtual void " << name << "(const " << type_name << "& value) = 0;" << endl;
+        }
+      } else {
+        body << tab << "::DBus::PropertyAdaptor< " << type_name << " > " << name << ";" << endl;
+      }
     }
 
     body << endl;

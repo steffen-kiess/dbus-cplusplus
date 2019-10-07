@@ -57,18 +57,15 @@ Message PropertiesAdaptor::Get(const CallMessage &call)
   if (!interface)
     throw ErrorFailed("requested interface not found");
 
-  Variant *value = interface->get_property(property_name);
+  Variant value = interface->get_property(property_name);
 
-  if (!value)
-    throw ErrorFailed("requested property not found");
-
-  on_get_property(*interface, property_name, *value);
+  on_get_property(*interface, property_name, value);
 
   ReturnMessage reply(call);
 
   MessageIter wi = reply.writer();
 
-  wi << *value;
+  wi << value;
   return reply;
 }
 

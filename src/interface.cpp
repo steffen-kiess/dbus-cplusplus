@@ -79,7 +79,7 @@ void InterfaceAdaptor::emit_signal(const SignalMessage &sig)
   _emit_signal(sig2);
 }
 
-Variant *InterfaceAdaptor::get_property(const std::string &name)
+Variant InterfaceAdaptor::get_property(const std::string &name)
 {
   PropertyTable::iterator pti = _properties.find(name);
 
@@ -88,9 +88,12 @@ Variant *InterfaceAdaptor::get_property(const std::string &name)
     if (!pti->second.read)
       throw ErrorAccessDenied("property is not readable");
 
-    return &(pti->second.value);
+    if (pti->second.getter)
+      return pti->second.getter();
+    else
+      return pti->second.value;
   }
-  return NULL;
+  throw ErrorFailed("requested property not found");
 }
 
 void InterfaceAdaptor::set_property(const std::string &name, Variant &value)
@@ -107,7 +110,10 @@ void InterfaceAdaptor::set_property(const std::string &name, Variant &value)
     if (pti->second.sig != sig)
       throw ErrorInvalidSignature("property expects a different type");
 
-    pti->second.value = value;
+    if (pti->second.setter)
+      pti->second.setter(value);
+    else
+      pti->second.value = value;
     return;
   }
   throw ErrorFailed("requested property not found");

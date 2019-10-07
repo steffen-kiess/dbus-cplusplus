@@ -27,6 +27,6 @@
 #include <string>
 #include "xml.h"
 
-void generate_adaptor(DBus::Xml::Document &doc, const char *filename);
+void generate_adaptor(DBus::Xml::Document &doc, const char *filename, bool property_accessors);
 
 #endif//__DBUSXX_TOOLS_GENERATE_ADAPTOR_H

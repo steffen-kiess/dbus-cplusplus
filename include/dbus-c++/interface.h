@@ -25,6 +25,7 @@
 #ifndef __DBUSXX_INTERFACE_H
 #define __DBUSXX_INTERFACE_H
 
+#include <functional>
 #include <string>
 #include <map>
 #include "api.h"
@@ -43,6 +44,8 @@ struct DXXAPI PropertyData
   bool		write;
   std::string	sig;
   Variant		value;
+  std::function<Variant(void)> getter = nullptr;
+  std::function<void(const Variant&)> setter = nullptr;
 };
 
 typedef std::map<std::string, PropertyData>	PropertyTable;
@@ -140,7 +143,7 @@ public:
 
   void emit_signal(const SignalMessage &);
 
-  Variant *get_property(const std::string &name);
+  Variant get_property(const std::string &name);
 
   void set_property(const std::string &name, Variant &value);
 
@@ -186,6 +189,41 @@ protected:
 	InterfaceAdaptor::_properties[ #variable ].write = can_write; \
 	InterfaceAdaptor::_properties[ #variable ].sig = type; \
 	variable.bind(InterfaceAdaptor::_properties[ #variable ]);
+
+#define bind_property_accessor_r(variable, sign, ...)          \
+  InterfaceAdaptor::_properties[#variable].read = true;        \
+  InterfaceAdaptor::_properties[#variable].write = false;      \
+  InterfaceAdaptor::_properties[#variable].sig = sign;         \
+  InterfaceAdaptor::_properties[#variable].getter = [this]() { \
+    ::DBus::Variant _DBUS_variant;                             \
+    ::DBus::MessageIter _DBUS_wi = _DBUS_variant.writer();     \
+    _DBUS_wi << this->variable();                              \
+    return _DBUS_variant;                                      \
+  };
+
+#define bind_property_accessor_w(variable, sign, ...)       \
+  InterfaceAdaptor::_properties[#variable].read = false;    \
+  InterfaceAdaptor::_properties[#variable].write = true;    \
+  InterfaceAdaptor::_properties[#variable].sig = sign;      \
+  InterfaceAdaptor::_properties[#variable].setter =         \
+      [this](const ::DBus::Variant _DBUS_value) {           \
+        this->variable(_DBUS_value.operator __VA_ARGS__()); \
+      };
+
+#define bind_property_accessor_rw(variable, sign, ...)         \
+  InterfaceAdaptor::_properties[#variable].read = true;        \
+  InterfaceAdaptor::_properties[#variable].write = true;       \
+  InterfaceAdaptor::_properties[#variable].sig = sign;         \
+  InterfaceAdaptor::_properties[#variable].getter = [this]() { \
+    ::DBus::Variant _DBUS_variant;                             \
+    ::DBus::MessageIter _DBUS_wi = _DBUS_variant.writer();     \
+    _DBUS_wi << this->variable();                              \
+    return _DBUS_variant;                                      \
+  };                                                           \
+  InterfaceAdaptor::_properties[#variable].setter =            \
+      [this](const ::DBus::Variant _DBUS_value) {              \
+        this->variable(_DBUS_value.operator __VA_ARGS__());    \
+      };
 
 # define connect_signal(interface, signal, callback) \
 	InterfaceProxy::_signals[ #signal ] = \

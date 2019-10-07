@@ -71,6 +71,8 @@ int main(int argc, char **argv)
   bool proxy_mode, adaptor_mode;
   char *proxy, *adaptor;
 
+  bool property_accessors = false;
+
   proxy_mode = false;
   proxy = 0;
 
@@ -88,6 +90,10 @@ int main(int argc, char **argv)
     {
       adaptor_mode = true;
       adaptor = argv[a] + 10;
+    }
+    else if (!strcmp(argv[a], "--property-accessors"))
+    {
+      property_accessors = true;
     }
   }
 
@@ -121,7 +127,7 @@ int main(int argc, char **argv)
   }
 
   if (proxy_mode)   generate_proxy(doc, proxy);
-  if (adaptor_mode) generate_adaptor(doc, adaptor);
+  if (adaptor_mode) generate_adaptor(doc, adaptor, property_accessors);
 
   return 0;
 }
