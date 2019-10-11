@@ -25,8 +25,9 @@
 #define __DBUSXX_TOOLS_GENERATE_ADAPTOR_H
 
 #include <string>
+#include <set>
 #include "xml.h"
 
-void generate_adaptor(DBus::Xml::Document &doc, const char *filename, bool property_accessors);
+void generate_adaptor(DBus::Xml::Document &doc, const char *filename, bool property_accessors, const std::set<std::string>& methodWithContext);
 
 #endif//__DBUSXX_TOOLS_GENERATE_ADAPTOR_H

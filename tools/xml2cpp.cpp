@@ -28,6 +28,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <set>
 
 #include "xml2cpp.h"
 #include "generate_adaptor.h"
@@ -79,6 +80,8 @@ int main(int argc, char **argv)
   adaptor_mode = false;
   adaptor = 0;
 
+  std::set<std::string> methodWithContext;
+
   for (int a = 1; a < argc; ++a)
   {
     if (!strncmp(argv[a], "--proxy=", 8))
@@ -94,6 +97,10 @@ int main(int argc, char **argv)
     else if (!strcmp(argv[a], "--property-accessors"))
     {
       property_accessors = true;
+    }
+    else if (!strncmp(argv[a], "--method-with-context=", 22))
+    {
+      methodWithContext.insert(argv[a] + 22);
     }
   }
 
@@ -127,7 +134,7 @@ int main(int argc, char **argv)
   }
 
   if (proxy_mode)   generate_proxy(doc, proxy);
-  if (adaptor_mode) generate_adaptor(doc, adaptor, property_accessors);
+  if (adaptor_mode) generate_adaptor(doc, adaptor, property_accessors, methodWithContext);
 
   return 0;
 }

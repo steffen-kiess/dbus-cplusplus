@@ -38,7 +38,7 @@ extern const char *dbus_includes;
 
 /*! Generate adaptor code for a XML introspection
   */
-void generate_adaptor(Xml::Document &doc, const char *filename, bool property_accessors)
+void generate_adaptor(Xml::Document &doc, const char *filename, bool property_accessors, const std::set<std::string>& methodWithContext)
 {
   ostringstream body;
   ostringstream head;
@@ -299,6 +299,10 @@ void generate_adaptor(Xml::Document &doc, const char *filename, bool property_ac
       Xml::Nodes annotations_object = annotations.select("name", "org.freedesktop.DBus.Object");
       string arg_object;
 
+      std::string fullName = ifacename + "." + method.get("name");
+      bool withContext =
+          methodWithContext.find(fullName) != methodWithContext.end();
+
       if (!annotations_object.empty())
       {
         arg_object = annotations_object.front()->get("value");
@@ -327,6 +331,12 @@ void generate_adaptor(Xml::Document &doc, const char *filename, bool property_ac
       // generate the method name
       body << method.get("name") << "(";
 
+      if (withContext) {
+        body << "const ::DBus::CallMessage &callMessage";
+        if (args_in.size() >= 1 || args_out.size() >= 1)
+          body << ", ";
+      }
+      
       // generate the methods 'in' variables
       unsigned int i = 0;
       for (Xml::Nodes::iterator ai = args_in.begin(); ai != args_in.end(); ++ai, ++i)
@@ -505,6 +515,10 @@ void generate_adaptor(Xml::Document &doc, const char *filename, bool property_ac
       Xml::Nodes args_in = args.select("direction", "in");
       Xml::Nodes args_out = args.select("direction", "out");
 
+      std::string fullName = ifacename + "." + method.get("name");
+      bool withContext =
+          methodWithContext.find(fullName) != methodWithContext.end();
+
       body << tab << "::DBus::Message " << stub_name(method.get("name")) << "(const ::DBus::CallMessage &call)" << endl
            << tab << "{" << endl;
       if(!args_in.empty())
@@ -611,6 +625,12 @@ void generate_adaptor(Xml::Document &doc, const char *filename, bool property_ac
       }
 
       body << method.get("name") << "(";
+
+      if (withContext) {
+        body << "call";
+        if (args_in.size() >= 1 || args_out.size() >= 1)
+          body << ", ";
+      }
 
       // generate call stub parameters
       i = 0;
