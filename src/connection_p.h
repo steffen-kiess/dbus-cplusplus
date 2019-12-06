@@ -33,6 +33,7 @@
 #include <dbus-c++/server.h>
 #include <dbus-c++/dispatcher.h>
 #include <dbus-c++/refptr_impl.h>
+#include <dbus-c++/blocking-call-handler.h>
 
 #include <dbus/dbus.h>
 
@@ -56,6 +57,8 @@ struct DXXAPILOCAL Connection::Private
   Server::Private *server;
   void detach_server();
 
+  std::shared_ptr<BlockingCallHandler> blocking_call_handler;
+
   Private(DBusConnection *, Server::Private * = NULL);
 
   Private(DBusBusType);
@@ -70,6 +73,10 @@ struct DXXAPILOCAL Connection::Private
   static void dispatch_status_stub(DBusConnection *, DBusDispatchStatus, void *);
 
   static DBusHandlerResult message_filter_stub(DBusConnection *, DBusMessage *, void *);
+};
+
+struct DXXAPILOCAL BlockingCallHandler::Private
+{
 };
 
 } /* namespace DBus */

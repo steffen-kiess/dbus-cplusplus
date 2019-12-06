@@ -27,6 +27,7 @@
 
 #include <dbus-c++/debug.h>
 #include <dbus-c++/connection.h>
+#include <dbus-c++/blocking-call-handler.h>
 
 #include <dbus/dbus.h>
 #include <string>
@@ -42,7 +43,7 @@
 using namespace DBus;
 
 Connection::Private::Private(DBusConnection *c, Server::Private *s)
-  : conn(c) , dispatcher(NULL), server(s)
+  : conn(c) , dispatcher(NULL), server(s), blocking_call_handler(std::make_shared<BlockingCallHandler>())
 {
   init();
 }
@@ -373,11 +374,11 @@ Message Connection::send_blocking(Message &msg, int timeout)
 
   if (this->_timeout != -1)
   {
-    reply = dbus_connection_send_with_reply_and_block(_pvt->conn, msg._pvt->msg, this->_timeout, e);
+    reply = this->_pvt->blocking_call_handler->dbus_connection_send_with_reply_and_block(_pvt->conn, msg._pvt->msg, this->_timeout, e);
   }
   else
   {
-    reply = dbus_connection_send_with_reply_and_block(_pvt->conn, msg._pvt->msg, timeout, e);
+    reply = this->_pvt->blocking_call_handler->dbus_connection_send_with_reply_and_block(_pvt->conn, msg._pvt->msg, timeout, e);
   }
 
   if (e) throw Error(e);
@@ -393,7 +394,7 @@ PendingCall Connection::send_async(Message &msg, int timeout)
   {
     throw ErrorNoMemory("Unable to start asynchronous call");
   }
-  return PendingCall(new PendingCall::Private(pending));
+  return PendingCall(new PendingCall::Private(pending, this->_pvt->blocking_call_handler));
 }
 
 void Connection::request_name(const char *name, int flags)
@@ -472,3 +473,21 @@ int Connection::get_timeout()
   return _timeout;
 }
 
+void Connection::set_blocking_call_handler(
+    const std::shared_ptr<BlockingCallHandler> &blocking_call_handler) {
+  this->_pvt->blocking_call_handler = blocking_call_handler;
+}
+
+BlockingCallHandler::BlockingCallHandler(){}
+BlockingCallHandler::~BlockingCallHandler(){}
+
+DBusMessage *BlockingCallHandler::dbus_connection_send_with_reply_and_block(
+    DBusConnection *connection, DBusMessage *message, int timeout_milliseconds,
+    DBusError *error) {
+  return ::dbus_connection_send_with_reply_and_block(
+      connection, message, timeout_milliseconds, error);
+}
+
+void BlockingCallHandler::dbus_pending_call_block(DBusPendingCall *pending) {
+  return ::dbus_pending_call_block(pending);
+}

@@ -33,10 +33,13 @@
 #include "message.h"
 #include "pendingcall.h"
 
+#include <memory>
+
 namespace DBus
 {
 
 class Connection;
+class BlockingCallHandler;
 
 typedef Slot<bool, const Message &> MessageSlot;
 
@@ -451,6 +454,9 @@ public:
   void set_timeout(int timeout);
 
   int get_timeout();
+
+  void set_blocking_call_handler(
+      const std::shared_ptr<BlockingCallHandler> &blocking_call_handler);
 
 private:
 

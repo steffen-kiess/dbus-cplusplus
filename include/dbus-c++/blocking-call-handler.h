@@ -22,15 +22,10 @@
  */
 
 
-#ifndef __DBUSXX_PENDING_CALL_P_H
-#define __DBUSXX_PENDING_CALL_P_H
+#ifndef __DBUSXX_BLOCKING_CALL_HANDLER_H
+#define __DBUSXX_BLOCKING_CALL_HANDLER_H
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <dbus-c++/pendingcall.h>
-#include <dbus-c++/refptr_impl.h>
+#include "api.h"
 
 #include <dbus/dbus.h>
 
@@ -38,23 +33,24 @@
 
 namespace DBus
 {
-class BlockingCallHandler;
 
-struct DXXAPILOCAL PendingCall::Private
+class DXXAPI BlockingCallHandler
 {
-  DBusPendingCall *call;
-  int dataslot;
-  Slot<void, PendingCall &> slot;
+public:
+  BlockingCallHandler();
+  ~BlockingCallHandler();
 
-  std::shared_ptr<BlockingCallHandler> blocking_call_handler;
+  virtual DBusMessage *dbus_connection_send_with_reply_and_block(
+      DBusConnection *connection, DBusMessage *message,
+      int timeout_milliseconds, DBusError *error);
 
-  Private(DBusPendingCall *, const std::shared_ptr<BlockingCallHandler>&);
+  virtual void dbus_pending_call_block(DBusPendingCall *pending);
 
-  ~Private();
-
-  static void notify_stub(DBusPendingCall *dpc, void *data);
+private:
+  struct Private;
+  RefPtrI<Private> _pvt;
 };
 
 } /* namespace DBus */
 
-#endif//__DBUSXX_PENDING_CALL_P_H
+#endif//__DBUSXX_BLOCKING_CALL_HANDLER_H

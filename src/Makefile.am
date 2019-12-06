@@ -43,6 +43,7 @@ HEADER_DIR  = $(top_srcdir)/include/dbus-c++
 libdbus_c___1_HEADERS = \
 	$(HEADER_DIR)/api.h          \
 	$(HEADER_DIR)/connection.h          \
+	$(HEADER_DIR)/blocking-call-handler.h          \
 	$(HEADER_DIR)/dbus.h          \
 	$(HEADER_DIR)/debug.h          \
 	$(HEADER_DIR)/dispatcher.h          \

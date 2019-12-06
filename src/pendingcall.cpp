@@ -26,6 +26,7 @@
 #endif
 
 #include <dbus-c++/pendingcall.h>
+#include <dbus-c++/blocking-call-handler.h>
 
 #include <dbus/dbus.h>
 
@@ -35,8 +36,8 @@
 
 using namespace DBus;
 
-PendingCall::Private::Private(DBusPendingCall *dpc)
-  : call(dpc), dataslot(-1)
+PendingCall::Private::Private(DBusPendingCall *dpc, const std::shared_ptr<BlockingCallHandler>&)
+  : call(dpc), dataslot(-1), blocking_call_handler(blocking_call_handler)
 {
   if (!dbus_pending_call_allocate_data_slot(&dataslot))
   {
@@ -103,7 +104,7 @@ void PendingCall::cancel()
 
 void PendingCall::block()
 {
-  dbus_pending_call_block(_pvt->call);
+  this->_pvt->blocking_call_handler->dbus_pending_call_block(_pvt->call);
 }
 
 void PendingCall::data(void *p)
