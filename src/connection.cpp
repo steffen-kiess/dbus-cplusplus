@@ -491,3 +491,7 @@ DBusMessage *BlockingCallHandler::dbus_connection_send_with_reply_and_block(
 void BlockingCallHandler::dbus_pending_call_block(DBusPendingCall *pending) {
   return ::dbus_pending_call_block(pending);
 }
+
+void BlockingCallHandler::invoke(const std::function<void()>& f) {
+  f();
+}

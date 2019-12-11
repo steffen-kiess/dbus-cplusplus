@@ -220,6 +220,8 @@ bool ObjectAdaptor::handle_message(const Message &msg)
 
     if (ii)
     {
+      // TODO: Make sure this stays alive?
+      conn()._pvt->blocking_call_handler->invoke([ii, cmsg, this](){
       try
       {
         Message ret = ii->dispatch_method(cmsg);
@@ -234,6 +236,7 @@ bool ObjectAdaptor::handle_message(const Message &msg)
       {
         _continuations[rle.tag] = new Continuation(conn(), cmsg, rle.tag);
       }
+        });
       return true;
     }
     else

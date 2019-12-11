@@ -30,6 +30,7 @@
 #include <dbus/dbus.h>
 
 #include <memory>
+#include <functional>
 
 namespace DBus
 {
@@ -45,6 +46,8 @@ public:
       int timeout_milliseconds, DBusError *error);
 
   virtual void dbus_pending_call_block(DBusPendingCall *pending);
+
+  virtual void invoke(const std::function<void()>& f);
 
 private:
   struct Private;
