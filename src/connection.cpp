@@ -49,7 +49,7 @@ Connection::Private::Private(DBusConnection *c, Server::Private *s)
 }
 
 Connection::Private::Private(DBusBusType type)
-  : dispatcher(NULL), server(NULL)
+  : dispatcher(NULL), server(NULL), blocking_call_handler(std::make_shared<BlockingCallHandler>())
 {
   InternalError e;
 
