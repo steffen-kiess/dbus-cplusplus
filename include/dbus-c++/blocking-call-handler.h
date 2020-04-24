@@ -39,7 +39,7 @@ class DXXAPI BlockingCallHandler
 {
 public:
   BlockingCallHandler();
-  ~BlockingCallHandler();
+  virtual ~BlockingCallHandler();
 
   virtual DBusMessage *dbus_connection_send_with_reply_and_block(
       DBusConnection *connection, DBusMessage *message,
