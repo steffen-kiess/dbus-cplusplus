@@ -549,6 +549,11 @@ void generate_proxy(Xml::Document &doc, const char *filename)
         body << tab << tab << "::DBus::MessageIter ri = sig.reader();" << endl
              << endl;
       }
+      else
+      {
+        body << tab << tab << "(void)sig;" << endl
+             << endl;
+      }
 
       unsigned int i = 0;
       for (Xml::Nodes::iterator ai = args.begin(); ai != args.end(); ++ai, ++i)
