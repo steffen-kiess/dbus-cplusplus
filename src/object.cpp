@@ -342,7 +342,7 @@ Message ObjectProxy::_invoke_method(CallMessage &call)
   if (call.path() == NULL)
     call.path(path().c_str());
 
-  if (call.destination() == NULL)
+  if (call.destination() == NULL && service() != "")
     call.destination(service().c_str());
 
   return conn().send_blocking(call, get_timeout());
@@ -353,7 +353,7 @@ bool ObjectProxy::_invoke_method_noreply(CallMessage &call)
   if (call.path() == NULL)
     call.path(path().c_str());
 
-  if (call.destination() == NULL)
+  if (call.destination() == NULL && service() != "")
     call.destination(service().c_str());
 
   return conn().send(call);
