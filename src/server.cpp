@@ -127,3 +127,22 @@ void Server::disconnect()
   dbus_server_disconnect(_pvt->server);
 }
 
+std::string Server::get_address() const
+{
+  char *address = dbus_server_get_address(_pvt->server);
+  if (!address)
+    throw ErrorNoMemory("Unable to get server address");
+  std::string str = address;
+  free(address);
+  return str;
+}
+
+std::string Server::get_id() const
+{
+  char *id = dbus_server_get_id(_pvt->server);
+  if (!id)
+    throw ErrorNoMemory("Unable to get server id");
+  std::string str = id;
+  free(id);
+  return str;
+}

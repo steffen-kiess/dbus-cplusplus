@@ -52,6 +52,10 @@ public:
 
   bool listening() const;
 
+  std::string get_address() const;
+
+  std::string get_id() const;
+
   bool operator == (const Server &) const;
 
   void disconnect();
