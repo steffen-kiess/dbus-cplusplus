@@ -26,7 +26,6 @@
 #define __DBUSXX_UTIL_H
 
 #include <sstream>
-#include <iostream>
 #include <iomanip>
 #include <cassert>
 
