@@ -57,9 +57,11 @@ struct DXXAPILOCAL Connection::Private
   Server::Private *server;
   void detach_server();
 
+  bool is_bus;
+
   std::shared_ptr<BlockingCallHandler> blocking_call_handler;
 
-  Private(DBusConnection *, Server::Private * = NULL);
+  Private(DBusConnection *, Server::Private *, bool is_bus);
 
   Private(DBusBusType);
 

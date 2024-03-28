@@ -64,7 +64,7 @@ public:
 
   Connection(Private *);
 
-  Connection(const char *address, bool priv = true);
+  Connection(const char *address, bool priv = true, bool is_bus = true);
 
   Connection(const Connection &c);
 

@@ -48,7 +48,7 @@ void Server::Private::on_new_conn_cb(DBusServer *server, DBusConnection *conn, v
 {
   Server *s = static_cast<Server *>(data);
 
-  Connection nc(new Connection::Private(conn, s->_pvt.get()));
+  Connection nc(new Connection::Private(conn, s->_pvt.get(), false));
 
   s->_pvt->connections.push_back(nc);
 

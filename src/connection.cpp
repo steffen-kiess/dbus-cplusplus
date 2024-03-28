@@ -42,14 +42,14 @@
 
 using namespace DBus;
 
-Connection::Private::Private(DBusConnection *c, Server::Private *s)
-  : conn(c) , dispatcher(NULL), server(s), blocking_call_handler(std::make_shared<BlockingCallHandler>())
+Connection::Private::Private(DBusConnection *c, Server::Private *s, bool is_bus)
+  : conn(c) , dispatcher(NULL), server(s), is_bus(is_bus), blocking_call_handler(std::make_shared<BlockingCallHandler>())
 {
   init();
 }
 
 Connection::Private::Private(DBusBusType type)
-  : dispatcher(NULL), server(NULL), blocking_call_handler(std::make_shared<BlockingCallHandler>())
+  : dispatcher(NULL), server(NULL), is_bus(true), blocking_call_handler(std::make_shared<BlockingCallHandler>())
 {
   InternalError e;
 
@@ -203,7 +203,7 @@ Connection Connection::ActivationBus()
   return Connection(new Private(DBUS_BUS_STARTER));
 }
 
-Connection::Connection(const char *address, bool priv)
+Connection::Connection(const char *address, bool priv, bool is_bus)
   : _timeout(-1)
 {
   InternalError e;
@@ -213,7 +213,7 @@ Connection::Connection(const char *address, bool priv)
 
   if (e) throw Error(e);
 
-  _pvt = new Private(conn);
+  _pvt = new Private(conn, NULL, is_bus);
 
   setup(default_dispatcher);
 
@@ -323,6 +323,12 @@ void Connection::add_match(const char *rule)
 {
   InternalError e;
 
+  if (!_pvt->is_bus)
+  {
+    debug_log("%s: not adding match rule %s because connection is not a bus connection", unique_name(), rule);
+    return;
+  }
+
   dbus_bus_add_match(_pvt->conn, rule, e);
 
   debug_log("%s: added match rule %s", unique_name(), rule);
@@ -334,6 +340,12 @@ void Connection::remove_match(const char	*rule,
                               bool		throw_on_error)
 {
   InternalError e;
+
+  if (!_pvt->is_bus)
+  {
+    debug_log("%s: not removing match rule %s because connection is not a bus connection", unique_name(), rule);
+    return;
+  }
 
   dbus_bus_remove_match(_pvt->conn, rule, e);
 
