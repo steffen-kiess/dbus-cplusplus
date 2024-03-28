@@ -25,6 +25,7 @@
 #ifndef __DBUSXX_CONNECTION_H
 #define __DBUSXX_CONNECTION_H
 
+#include <functional>
 #include <list>
 
 #include "api.h"
@@ -458,7 +459,10 @@ public:
   void set_blocking_call_handler(
       const std::shared_ptr<BlockingCallHandler> &blocking_call_handler);
 
-private:
+  std::shared_ptr<void> add_disconnect_handler(
+      const std::function<void()> &handler);
+
+ private:
 
   DXXAPILOCAL void init();
 

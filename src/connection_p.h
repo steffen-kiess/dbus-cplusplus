@@ -61,6 +61,11 @@ struct DXXAPILOCAL Connection::Private
 
   std::shared_ptr<BlockingCallHandler> blocking_call_handler;
 
+  bool is_disconnected = false;
+  uint64_t disconnect_handler_id = 0;
+  std::shared_ptr<std::map<uint64_t, std::function<void()>>>
+      disconnect_handlers;
+
   Private(DBusConnection *, Server::Private *, bool is_bus);
 
   Private(DBusBusType);

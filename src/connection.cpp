@@ -127,6 +127,12 @@ bool Connection::Private::do_dispatch()
 
     detach_server();
 
+    is_disconnected = true;
+    auto handlers = this->disconnect_handlers;
+    this->disconnect_handlers.reset();
+    if (handlers)
+      for (const auto &entry : *handlers) entry.second();
+
     return true;
   }
 
@@ -488,6 +494,31 @@ int Connection::get_timeout()
 void Connection::set_blocking_call_handler(
     const std::shared_ptr<BlockingCallHandler> &blocking_call_handler) {
   this->_pvt->blocking_call_handler = blocking_call_handler;
+}
+
+std::shared_ptr<void> Connection::add_disconnect_handler(
+    const std::function<void()> &handler) {
+  if (this->_pvt->is_disconnected) {
+    handler();
+    return std::shared_ptr<void>();
+  }
+
+  if (!this->_pvt->disconnect_handlers)
+    this->_pvt->disconnect_handlers =
+        std::make_shared<std::map<uint64_t, std::function<void()>>>();
+  auto handlers = this->_pvt->disconnect_handlers;
+
+  if (this->_pvt->disconnect_handler_id + 1 == 0)
+    throw ErrorFailed("disconnect_handler_id overflow");
+  this->_pvt->disconnect_handler_id++;
+  auto id = this->_pvt->disconnect_handler_id;
+
+  auto remover = std::shared_ptr<void>(nullptr, [handlers, id](void *p) {
+    (void)p;
+    handlers->erase(id);
+  });
+  (*handlers)[id] = handler;
+  return remover;
 }
 
 BlockingCallHandler::BlockingCallHandler(){}
